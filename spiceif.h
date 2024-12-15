@@ -180,6 +180,7 @@ public:
     virtual void report()=0;
     virtual void set(unsigned long val)=0;
     virtual void set(string val)=0;
+    virtual unsigned long to_ulong()=0;
     // pulse format PULSE(V1 V2 TD TR TF PW PER NP)
     void pulse(string duration)
     {
@@ -208,6 +209,7 @@ protected:
     double _realval;
     bool _isactivated = false;
 public:
+    unsigned long to_ulong() { return _logicval ? 1 : 0; }
     void set(unsigned long val)
     {
         if ( not isInput() ) return;
@@ -354,6 +356,7 @@ template <int sz> class VectorNet : public Net
     string hexstr() { return bitset2hexstr<sz>(_bits); }
 public:
     vector<ScalarNet*>& subnets() { return _nets; }
+    unsigned long to_ulong() { return _bits.to_ulong(); }
     void set(unsigned long val) { _set(val); }
     void set(string val)
     {

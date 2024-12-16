@@ -491,6 +491,7 @@ class SpiceIf : public SpiceIfBase
         bool changed = false;
         for(auto n:_nets)
             if ( n.second->update(vecs) ) changed = true;
+        cout << "timestep=" << vecs->vecindex << endl;
 #ifndef SPICEDBG
         if ( changed )
 #endif

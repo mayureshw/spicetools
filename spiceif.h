@@ -86,7 +86,12 @@ public:
         ngSpice_Command(const_cast<char*>(cmd.c_str()));
     }
     void sendCircCmd(string cmd) { sendCmd( string("circbyline ") + cmd ); }
-    void writeraw() { sendCmd(string("write ")+rawopfile); }
+    void writeraw( list<string> veclist = {} )
+    {
+        string cmd = "write " + rawopfile;
+        for( auto v:veclist ) cmd = cmd + " " + v;
+        sendCmd(cmd);
+    }
     void loadraw() { sendCmd(string("load ")+rawopfile); }
     // Right command to use is 'source' with sendCmd, but with at the circbyline commands
     // that follow are getting ignored, which is strange, .include seems to work though

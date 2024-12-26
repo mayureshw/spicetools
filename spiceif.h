@@ -77,6 +77,7 @@ protected:
         return 0;
     }
 public:
+    virtual void save(string) = 0;
     void sendCmd(string cmd)
     {
 #ifdef SPICEDBG
@@ -185,6 +186,7 @@ public:
     virtual void report()=0;
     virtual void set(unsigned long val)=0;
     virtual void set(string val)=0;
+    virtual void save() { _spiceif->save(_name); }
     virtual unsigned long to_ulong()=0;
     // pulse format PULSE(V1 V2 TD TR TF PW PER NP)
     void pulse(string duration)
@@ -403,6 +405,7 @@ public:
              [this](ScalarNet *a, ScalarNet *b) { return spiceCompare(a,b); });
         for(auto n:spicesorted) n->sendPortStr();
     }
+    void save() { for(auto n:_nets) n->save(); }
     void activate(t_vecid& vecid) { for(auto n:_nets) n->activate(vecid); }
     void setVsrc() { for(auto n:_nets) n->setVsrc(); }
     void report() { cout << _name.c_str() << "=" << hexstr() << endl; }
@@ -441,6 +444,7 @@ public:
 
 class SpiceIf : public SpiceIfBase
 {
+    const bool _saveall;
     static inline int _id = 0; // Needed for ngSpice_Init_Sync
     TimeNet *_timenet;
     map<string,Net*> _nets;
@@ -555,6 +559,7 @@ public:
                         _subInpnets.emplace( sn->name(), sn );
             }
             _nets.emplace(name,net);
+            if ( not _saveall ) net->save();
             return net;
         }
         else return it->second;
@@ -578,12 +583,18 @@ public:
         // (hence we don't do this in the constructor)
         for(auto p:ports) p->setVsrc();
     }
+    void save(string name)
+    {
+        string cmd = ".save ";
+        sendCircCmd( cmd + name );
+    }
     void run()
     {
         end();
         sendCmd("run");
     }
-    SpiceIf(char *initfile)
+    // Pass saveall = false if you want only the created nets' vectors to be saved, and not all
+    SpiceIf(char *initfile, bool saveall = true) : _saveall(saveall)
     {
         initSimu();
         initComment();

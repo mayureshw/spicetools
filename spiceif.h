@@ -532,14 +532,19 @@ class SpiceIf : public SpiceIfBase
             << " type:" << vecs->type   // e.g. tran1, tran2 for .tran command
             << " veccount:" << vecs->veccount
             << endl;
-        cout.flush();
 #endif
         for(int i=0; i<vecs->veccount; i++)
         {
             auto vinfo = vecs->vecs[i];
             _vecid[vinfo->vecname] = vinfo->number;
+#ifdef SPICEDBG
+            cout << "vec " << vinfo->vecname << " = " << vinfo->number << endl;
+#endif
         }
         for(auto n:_nets) n.second->activate(_vecid);
+#ifdef SPICEDBG
+        cout.flush();
+#endif
         return 0;
     }
 public:

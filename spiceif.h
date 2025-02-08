@@ -77,7 +77,11 @@ protected:
         return 0;
     }
 public:
-    virtual void save(string) = 0;
+    virtual void save(string)
+    {
+        cout << "SpiceIfBase::save unimplemented" << endl;
+        exit(1);
+    }
     void sendCmd(string cmd)
     {
 #ifdef SPICEDBG

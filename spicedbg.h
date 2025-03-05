@@ -161,7 +161,9 @@ public:
             auto vecname = allvecnames[i];
             if ( vecname[0] != 'v' ) continue;
             if ( vecname[2] == 'm' ) continue;
-            string svecname { &vecname[2], strlen(vecname) - 3 };
+            auto namelen = strlen(vecname);
+            if ( vecname[namelen-2] == '#' ) continue; // skip internal nets. their names end in #
+            string svecname { &vecname[2], namelen - 3 };
             _uwatches.push_back( new UWatch(svecname) );
         }
     }

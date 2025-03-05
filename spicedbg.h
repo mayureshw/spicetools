@@ -102,7 +102,7 @@ class TimeWatch : public Watch
     double *_vec;
 public:
     int steps() { return _steps; }
-    void report() { printf("%e ",_vec[_curi]); }
+    void report() { printf("step=%d time=%e ",_curi,_vec[_curi]); }
     bool nextState(int i)
     {
         _curi = i;

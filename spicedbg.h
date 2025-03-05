@@ -5,6 +5,7 @@
 #include <list>
 #include <vector>
 #include <bitset>
+#include <string.h>
 #include <ngspice/sharedspice.h>
 #include "spiceif.h"
 
@@ -59,6 +60,41 @@ public:
     }
 };
 
+class UWatch : public Watch
+{
+    double *_vec;
+    int _ustateCnt = 0;
+    bool _inUState = false;
+    bool pointUState(int i)
+    {
+        auto v = _vec[i];
+        return v > _l and v < _h;
+    }
+public:
+    static inline double _l;
+    static inline double _h;
+    static inline int _nsteps;
+    void report() {}
+    bool nextState(int i)
+    {
+        _ustateCnt = pointUState(i) ? _ustateCnt + 1 : 0;
+        bool newInUState = _ustateCnt >= _nsteps;
+        bool changed = newInUState != _inUState;
+        _inUState = newInUState;
+        if ( changed )
+            cout << _name
+                << " UState=" << _inUState
+                << " val=" << _vec[i]
+                << " step=" << i
+                << endl;
+        return false;
+    }
+    UWatch( string name ) : Watch( name )
+    {
+        _vec = getvec(name)->v_realdata;
+    }
+};
+
 class TimeWatch : public Watch
 {
     int _curi = 0;
@@ -84,6 +120,7 @@ class SpiceDbg : public SpiceIfBase
 {
     TimeWatch *_timewatch;
     list<Watch*> _watches;
+    list<Watch*> _uwatches;
     void report()
     {
         _timewatch->report();
@@ -113,6 +150,21 @@ public:
         }
         _watches.push_back( new VectorWatch<sz>( name, netnames ) );
     }
+    void addUWatches(double l, double h, int nsteps)
+    {
+        auto allvecnames = ngSpice_AllVecs( ngSpice_CurPlot() );
+        UWatch::_l = l;
+        UWatch::_h = h;
+        UWatch::_nsteps = nsteps;
+        for(int i=0; allvecnames[i]; i++)
+        {
+            auto vecname = allvecnames[i];
+            if ( vecname[0] != 'v' ) continue;
+            if ( vecname[2] == 'm' ) continue;
+            string svecname { &vecname[2], strlen(vecname) - 3 };
+            _uwatches.push_back( new UWatch(svecname) );
+        }
+    }
     void play()
     {
         auto steps = _timewatch->steps();
@@ -126,6 +178,7 @@ public:
                 _timewatch->nextState(i);
                 report();
             }
+            for( auto u:_uwatches ) u->nextState(i);
         }
     }
     SpiceDbg()
@@ -137,6 +190,7 @@ public:
     {
         delete _timewatch;
         for(auto w:_watches) delete w;
+        for(auto w:_uwatches) delete w;
     }
 };
 

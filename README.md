@@ -20,6 +20,12 @@ spicedbg.h:
     their values as a hex string. All watched vectors are printed when any one
     of them changes making the output compact.
 
+    If addUWatches is invoked, every net is watched for a dangling value
+    between logic 0 and logic 1 for a given number of time steps. Arguments l
+    and h of this API identify the lower and upper threshold to treat a value
+    as dangling and nsteps, the minimum continuous count of steps after which
+    the net will be regarded as dangling.
+
 spiceif.h:
 
     Place to specify configuration information such as Vdd voltage, name of raw

@@ -103,7 +103,7 @@ public:
     void sourceFile(string flnm) { sendCircCmd(".include " + flnm); }
     // sendCmd doesn't work for initComment, tried
     void initComment() { sendCircCmd("* spiceif simulation"); }
-    void setVdd() { sendCircCmd( string("Vdd vdd gnd DC ") + vddstr ); }
+    void setVdd() { sendCircCmd( string("Vdd Vdd 0 DC ") + vddstr ); }
     void end() { sendCircCmd(".end"); }
     // It was observed that putting .tran directly in initfile does not work correctly
     void tran(string step, string stop)
